@@ -1,0 +1,46 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: agenda-pro-api
+
+  datasource:
+    url: jdbc:postgresql://db.ymgritnzqagtgpmczhlp.supabase.co:5432/postgres
+    username: postgres
+    password: RPTe0yZGuqAZl5MV
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+# =========================
+# JWT (autenticação)
+# =========================
+
+jwt:
+  secret: minha-chave-super-secreta
+  expiration: 86400000 # 1 dia em ms
+
+# =========================
+# LOGGING
+# =========================
+
+logging:
+  level:
+    org.springframework: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE
