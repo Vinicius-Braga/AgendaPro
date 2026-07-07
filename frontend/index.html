@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda Pro — Painel de teste</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div id="toast" class="toast hidden"></div>
+
+<!-- ===================== TELA DE AUTENTICAÇÃO ===================== -->
+<section id="auth-screen" class="auth-screen">
+  <div class="auth-card">
+    <h1 class="brand">Agenda Pro</h1>
+    <p class="subtitle">Painel interno de teste da API</p>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="login-form">Entrar</button>
+      <button class="tab-btn" data-tab="register-form">Criar conta</button>
+    </div>
+
+    <form id="login-form" class="auth-form">
+      <label>E-mail
+        <input type="email" name="email" required placeholder="voce@exemplo.com">
+      </label>
+      <label>Senha
+        <input type="password" name="password" required placeholder="••••••••">
+      </label>
+      <button type="submit" class="btn btn-primary">Entrar</button>
+    </form>
+
+    <form id="register-form" class="auth-form hidden">
+      <label>Nome
+        <input type="text" name="name" required placeholder="Seu nome">
+      </label>
+      <label>E-mail
+        <input type="email" name="email" required placeholder="voce@exemplo.com">
+      </label>
+      <label>Senha
+        <input type="password" name="password" required placeholder="mínimo 6 caracteres">
+      </label>
+      <button type="submit" class="btn btn-primary">Criar conta</button>
+    </form>
+  </div>
+</section>
+
+<!-- ===================== APP ===================== -->
+<div id="app" class="app hidden">
+
+  <header class="app-header">
+    <h1 class="brand">Agenda Pro</h1>
+    <div class="header-right">
+      <span id="user-email" class="user-email"></span>
+      <button id="logout-btn" class="btn btn-ghost">Sair</button>
+    </div>
+  </header>
+
+  <nav class="nav-tabs">
+    <button class="nav-tab active" data-view="view-clients">Clientes</button>
+    <button class="nav-tab" data-view="view-services">Serviços</button>
+    <button class="nav-tab" data-view="view-appointments">Agendamentos</button>
+  </nav>
+
+  <main class="content">
+
+    <!-- ---------- CLIENTES ---------- -->
+    <section id="view-clients" class="view">
+      <div class="panel">
+        <h2>Novo cliente</h2>
+        <form id="client-form" class="inline-form">
+          <input type="text" name="name" placeholder="Nome" required>
+          <input type="text" name="phone" placeholder="Telefone">
+          <button type="submit" class="btn btn-primary">Adicionar</button>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h2>Meus clientes</h2>
+        <div id="clients-list" class="list"></div>
+      </div>
+    </section>
+
+    <!-- ---------- SERVIÇOS ---------- -->
+    <section id="view-services" class="view hidden">
+      <div class="panel">
+        <h2>Novo serviço</h2>
+        <form id="service-form" class="inline-form">
+          <input type="text" name="name" placeholder="Nome do serviço" required>
+          <input type="number" name="price" placeholder="Preço (R$)" step="0.01" min="0" required>
+          <input type="number" name="durationMinutes" placeholder="Duração (min)" min="1" required>
+          <button type="submit" class="btn btn-primary">Adicionar</button>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h2>Meus serviços</h2>
+        <div id="services-list" class="list"></div>
+      </div>
+    </section>
+
+    <!-- ---------- AGENDAMENTOS ---------- -->
+    <section id="view-appointments" class="view hidden">
+      <div class="panel">
+        <h2>Novo agendamento</h2>
+        <form id="appointment-form" class="inline-form">
+          <select name="clientId" required>
+            <option value="" disabled selected>Cliente</option>
+          </select>
+          <select name="serviceId" required>
+            <option value="" disabled selected>Serviço</option>
+          </select>
+          <input type="datetime-local" name="dateTime" required>
+          <input type="number" name="price" placeholder="Preço (R$)" step="0.01" min="0" required>
+          <input type="text" name="notes" placeholder="Observações (opcional)">
+          <button type="submit" class="btn btn-primary">Agendar</button>
+        </form>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Agenda</h2>
+          <div class="agenda-filters">
+            <input type="date" id="agenda-date">
+            <button id="btn-view-day" class="btn btn-secondary">Ver dia</button>
+            <button id="btn-view-pending" class="btn btn-secondary">Pendentes de pagamento</button>
+          </div>
+        </div>
+        <div id="appointments-list" class="list"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
