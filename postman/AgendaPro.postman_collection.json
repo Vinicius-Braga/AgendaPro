@@ -276,14 +276,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"client\": { \"id\": \"{{clientId}}\" },\n  \"service\": { \"id\": \"{{serviceId}}\" },\n  \"dateTime\": \"2026-07-10T14:00:00\",\n  \"price\": 50.00,\n  \"notes\": \"Primeira visita\"\n}"
+              "raw": "{\n  \"clientId\": \"{{clientId}}\",\n  \"serviceId\": \"{{serviceId}}\",\n  \"dateTime\": \"2026-07-10T14:00:00\",\n  \"price\": 50.00,\n  \"notes\": \"Primeira visita\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/appointments",
               "host": ["{{baseUrl}}"],
               "path": ["appointments"]
             },
-            "description": "Cria um agendamento vinculado automaticamente ao usuário autenticado (via token). Nasce sempre com status AGENDADO (SCHEDULED) e pagamento PENDENTE (PENDING) — não é possível definir esses valores na criação. dateTime no formato ISO (yyyy-MM-ddTHH:mm:ss)."
+            "description": "Cria um agendamento vinculado automaticamente ao usuário autenticado (via token). clientId e serviceId precisam pertencer ao usuário autenticado (senão retorna 404). Nasce sempre com status AGENDADO (SCHEDULED) e pagamento PENDENTE (PENDING) — não é possível definir esses valores na criação. dateTime não pode estar no passado, formato ISO (yyyy-MM-ddTHH:mm:ss)."
           },
           "event": [
             {

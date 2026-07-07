@@ -1,9 +1,13 @@
 package com.agenda_pro_api.controller;
 
-import com.agenda_pro_api.entity.Client;
+import com.agenda_pro_api.dto.ClientResponseDTO;
+import com.agenda_pro_api.dto.CreateClientRequestDTO;
 import com.agenda_pro_api.entity.User;
 import com.agenda_pro_api.service.ClientService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,20 +25,17 @@ public class ClientController {
     // SecurityContext ao validar o token. O cliente do JWT não precisa (e não
     // deve) informar o userId manualmente — ele já está implícito no token.
     @GetMapping
-    public List<Client> list(@AuthenticationPrincipal User user) {
+    public List<ClientResponseDTO> list(@AuthenticationPrincipal User user) {
         return service.listByUser(user.getId());
     }
 
     @PostMapping
-    public Client create(
-            @RequestBody Client client,
+    public ResponseEntity<ClientResponseDTO> create(
+            @RequestBody @Valid CreateClientRequestDTO dto,
             @AuthenticationPrincipal User user
     ) {
-        // O dono do cliente é SEMPRE o usuário autenticado, nunca um valor
-        // vindo do corpo da requisição — isso impediria um usuário de criar
-        // registros em nome de outro.
-        client.setUser(user);
-        return service.create(client);
+        ClientResponseDTO created = service.create(dto, user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @DeleteMapping("/{id}")

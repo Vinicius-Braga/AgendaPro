@@ -59,6 +59,15 @@ public class GlobalExceptionHandler {
                 .body(ApiError.of(status.value(), ex.getMessage()));
     }
 
+    // 409 Conflict: já existe um agendamento no mesmo horário para o usuário.
+    @ExceptionHandler(AppointmentConflictException.class)
+    public ResponseEntity<ApiError> handleAppointmentConflict(AppointmentConflictException ex) {
+        HttpStatus status = HttpStatus.CONFLICT;
+        return ResponseEntity
+                .status(status)
+                .body(ApiError.of(status.value(), ex.getMessage()));
+    }
+
     // 400 Bad Request: falha nas validações do @Valid (@NotBlank, @Email, @Size...).
     // O Spring lança MethodArgumentNotValidException; aqui extraímos campo -> mensagem.
     @ExceptionHandler(MethodArgumentNotValidException.class)

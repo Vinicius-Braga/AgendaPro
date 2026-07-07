@@ -1,9 +1,13 @@
 package com.agenda_pro_api.controller;
 
-import com.agenda_pro_api.entity.Appointment;
+import com.agenda_pro_api.dto.AppointmentResponseDTO;
+import com.agenda_pro_api.dto.CreateAppointmentRequestDTO;
 import com.agenda_pro_api.entity.User;
 import com.agenda_pro_api.service.AppointmentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,16 +23,16 @@ public class AppointmentController {
     private final AppointmentService service;
 
     @PostMapping
-    public Appointment create(
-            @RequestBody Appointment appointment,
+    public ResponseEntity<AppointmentResponseDTO> create(
+            @RequestBody @Valid CreateAppointmentRequestDTO dto,
             @AuthenticationPrincipal User user
     ) {
-        appointment.setUser(user);
-        return service.create(appointment);
+        AppointmentResponseDTO created = service.create(dto, user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping("/day")
-    public List<Appointment> getDay(
+    public List<AppointmentResponseDTO> getDay(
             @AuthenticationPrincipal User user,
             @RequestParam String date
     ) {
@@ -36,7 +40,7 @@ public class AppointmentController {
     }
 
     @GetMapping("/pending")
-    public List<Appointment> getPending(@AuthenticationPrincipal User user) {
+    public List<AppointmentResponseDTO> getPending(@AuthenticationPrincipal User user) {
         return service.getPending(user.getId());
     }
 
@@ -46,22 +50,22 @@ public class AppointmentController {
     // também documenta a operação: fica óbvio, sem precisar ler o corpo do
     // request, que "iniciar" é uma ação e não uma atualização arbitrária.
     @PatchMapping("/{id}/start")
-    public Appointment start(@PathVariable UUID id, @AuthenticationPrincipal User user) {
+    public AppointmentResponseDTO start(@PathVariable UUID id, @AuthenticationPrincipal User user) {
         return service.start(id, user.getId());
     }
 
     @PatchMapping("/{id}/complete")
-    public Appointment complete(@PathVariable UUID id, @AuthenticationPrincipal User user) {
+    public AppointmentResponseDTO complete(@PathVariable UUID id, @AuthenticationPrincipal User user) {
         return service.complete(id, user.getId());
     }
 
     @PatchMapping("/{id}/cancel")
-    public Appointment cancel(@PathVariable UUID id, @AuthenticationPrincipal User user) {
+    public AppointmentResponseDTO cancel(@PathVariable UUID id, @AuthenticationPrincipal User user) {
         return service.cancel(id, user.getId());
     }
 
     @PatchMapping("/{id}/pay")
-    public Appointment pay(@PathVariable UUID id, @AuthenticationPrincipal User user) {
+    public AppointmentResponseDTO pay(@PathVariable UUID id, @AuthenticationPrincipal User user) {
         return service.pay(id, user.getId());
     }
 }

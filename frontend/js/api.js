@@ -84,13 +84,7 @@ const api = {
   createAppointment: ({ clientId, serviceId, dateTime, price, notes }) =>
     request("/appointments", {
       method: "POST",
-      body: {
-        client: { id: clientId },
-        service: { id: serviceId },
-        dateTime,
-        price,
-        notes,
-      },
+      body: { clientId, serviceId, dateTime, price, notes },
     }),
   startAppointment: (id) => request(`/appointments/${id}/start`, { method: "PATCH" }),
   completeAppointment: (id) => request(`/appointments/${id}/complete`, { method: "PATCH" }),
