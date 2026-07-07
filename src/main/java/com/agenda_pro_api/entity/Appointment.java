@@ -45,7 +45,10 @@ public class Appointment {
     @Column(nullable = false)
     private BigDecimal price;
 
-    private Boolean paid;
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "payment_status", columnDefinition = "payment_status", nullable = false)
+    private PaymentStatus paymentStatus;
 
     private String notes;
 

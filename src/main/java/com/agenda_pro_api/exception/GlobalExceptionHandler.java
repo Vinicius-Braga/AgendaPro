@@ -50,6 +50,15 @@ public class GlobalExceptionHandler {
                 .body(ApiError.of(status.value(), ex.getMessage()));
     }
 
+    // 409 Conflict: a transição de estado pedida não é válida a partir do estado atual.
+    @ExceptionHandler(InvalidStateTransitionException.class)
+    public ResponseEntity<ApiError> handleInvalidStateTransition(InvalidStateTransitionException ex) {
+        HttpStatus status = HttpStatus.CONFLICT;
+        return ResponseEntity
+                .status(status)
+                .body(ApiError.of(status.value(), ex.getMessage()));
+    }
+
     // 400 Bad Request: falha nas validações do @Valid (@NotBlank, @Email, @Size...).
     // O Spring lança MethodArgumentNotValidException; aqui extraímos campo -> mensagem.
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -34,6 +34,11 @@
       "key": "serviceId",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "appointmentId",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
@@ -271,14 +276,83 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"client\": { \"id\": \"{{clientId}}\" },\n  \"service\": { \"id\": \"{{serviceId}}\" },\n  \"dateTime\": \"2026-07-10T14:00:00\",\n  \"status\": \"SCHEDULED\",\n  \"price\": 50.00,\n  \"paid\": false,\n  \"notes\": \"Primeira visita\"\n}"
+              "raw": "{\n  \"client\": { \"id\": \"{{clientId}}\" },\n  \"service\": { \"id\": \"{{serviceId}}\" },\n  \"dateTime\": \"2026-07-10T14:00:00\",\n  \"price\": 50.00,\n  \"notes\": \"Primeira visita\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/appointments",
               "host": ["{{baseUrl}}"],
               "path": ["appointments"]
             },
-            "description": "Cria um agendamento vinculado automaticamente ao usuário autenticado (via token). status aceita: SCHEDULED, DONE, CANCELED. dateTime no formato ISO (yyyy-MM-ddTHH:mm:ss)."
+            "description": "Cria um agendamento vinculado automaticamente ao usuário autenticado (via token). Nasce sempre com status AGENDADO (SCHEDULED) e pagamento PENDENTE (PENDING) — não é possível definir esses valores na criação. dateTime no formato ISO (yyyy-MM-ddTHH:mm:ss)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.id) {",
+                  "        pm.collectionVariables.set(\"appointmentId\", body.id);",
+                  "        console.log(\"appointmentId salvo:\", body.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Start appointment",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/appointments/{{appointmentId}}/start",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments", "{{appointmentId}}", "start"]
+            },
+            "description": "Transição SCHEDULED -> IN_PROGRESS. Só funciona se o agendamento estiver AGENDADO; senão retorna 409."
+          }
+        },
+        {
+          "name": "Complete appointment",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/appointments/{{appointmentId}}/complete",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments", "{{appointmentId}}", "complete"]
+            },
+            "description": "Transição IN_PROGRESS -> DONE. Só funciona se o agendamento estiver EM ATENDIMENTO; senão retorna 409."
+          }
+        },
+        {
+          "name": "Cancel appointment",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/appointments/{{appointmentId}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments", "{{appointmentId}}", "cancel"]
+            },
+            "description": "Cancela o agendamento. Permitido a partir de SCHEDULED ou IN_PROGRESS; retorna 409 se já estiver DONE ou CANCELED."
+          }
+        },
+        {
+          "name": "Mark appointment as paid",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/appointments/{{appointmentId}}/pay",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments", "{{appointmentId}}", "pay"]
+            },
+            "description": "Marca o pagamento como PAID. Independente do status do atendimento. Retorna 409 se já estiver pago."
           }
         },
         {

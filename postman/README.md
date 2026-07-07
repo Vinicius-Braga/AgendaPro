@@ -36,10 +36,25 @@ As rotas de `/auth` estão marcadas como **No Auth** (são públicas).
 
 ## Variáveis capturadas automaticamente
 
-| Variável     | Preenchida por            |
-|--------------|---------------------------|
-| `token`      | Auth → Login              |
-| `clientId`   | Clients → Create client   |
-| `serviceId`  | Services → Create service |
+| Variável        | Preenchida por                |
+|-----------------|--------------------------------|
+| `token`         | Auth → Login                   |
+| `clientId`      | Clients → Create client        |
+| `serviceId`     | Services → Create service      |
+| `appointmentId` | Appointments → Create appointment |
 
 Isso permite encadear as requisições sem copiar/colar IDs manualmente.
+
+## Ciclo de vida do agendamento
+
+O `status` e o pagamento nunca são definidos pelo cliente da API — todo
+agendamento nasce `SCHEDULED` (agendado) e `PENDING` (pagamento pendente).
+A partir daí, as transições são feitas por ações explícitas:
+
+- `PATCH /appointments/{id}/start` — SCHEDULED → IN_PROGRESS
+- `PATCH /appointments/{id}/complete` — IN_PROGRESS → DONE
+- `PATCH /appointments/{id}/cancel` — SCHEDULED ou IN_PROGRESS → CANCELED
+- `PATCH /appointments/{id}/pay` — PENDING → PAID (independente do status do atendimento)
+
+Uma transição fora de ordem (ex.: concluir um agendamento que nunca foi
+iniciado) retorna `409 Conflict`.
