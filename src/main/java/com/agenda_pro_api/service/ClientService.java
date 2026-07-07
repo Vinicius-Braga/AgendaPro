@@ -1,6 +1,7 @@
 package com.agenda_pro_api.service;
 
 import com.agenda_pro_api.entity.Client;
+import com.agenda_pro_api.exception.ResourceNotFoundException;
 import com.agenda_pro_api.repository.ClientRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,12 @@ public class ClientService {
         return repository.save(client);
     }
 
-    public void delete(UUID id) {
-        repository.deleteById(id);
+    public void delete(UUID id, UUID userId) {
+        // Busca pelo par (id, userId): garante que um usuário só apague os
+        // PRÓPRIOS clientes, mesmo sabendo o id de um cliente de outro usuário.
+        Client client = repository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado"));
+
+        repository.delete(client);
     }
 }

@@ -32,8 +32,8 @@ spring:
 # =========================
 
 jwt:
-  secret: minha_chave_super_secreta_123456789
-  expiration: 86400000 # 1 dia em ms
+  secret: ${JWT_SECRET:minha_chave_super_secreta_123456789}
+  expiration: ${JWT_EXPIRATION:86400000} # 1 dia em ms
 
 # =========================
 # LOGGING

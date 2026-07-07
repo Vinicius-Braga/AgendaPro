@@ -3,16 +3,29 @@ package com.agenda_pro_api.service;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
 @Service
 public class JwtService {
 
-    private final String secret = "agenda-pro-secret";
+    private final String secret;
+    private final long expirationMillis;
+
+    // @Value lê valores do application.yaml (que por sua vez pode vir de
+    // variáveis de ambiente, ex.: ${JWT_SECRET:...}). Assim o segredo do JWT
+    // fica configurável por ambiente (dev/prod) sem tocar no código-fonte —
+    // e nunca mais fica hardcoded, o que é essencial: se o segredo vazasse
+    // no repositório, qualquer pessoa poderia forjar tokens válidos.
+    public JwtService(
+            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.expiration}") long expirationMillis
+    ) {
+        this.secret = secret;
+        this.expirationMillis = expirationMillis;
+    }
 
     public String generateToken(String email) {
 
@@ -43,8 +56,8 @@ public class JwtService {
     }
 
     private Instant generateExpirationDate() {
-        return LocalDateTime.now()
-                .plusHours(2)
-                .toInstant(ZoneOffset.of("-03:00"));
+        // Instant já é UTC por definição — somar millis direto evita bugs de
+        // fuso horário que existiam antes (offset "-03:00" fixo no código).
+        return Instant.now().plusMillis(expirationMillis);
     }
 }

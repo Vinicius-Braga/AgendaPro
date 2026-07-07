@@ -2,7 +2,11 @@ package com.agenda_pro_api.service;
 
 import com.agenda_pro_api.dto.LoginDTO;
 import com.agenda_pro_api.dto.RegisterDTO;
+import com.agenda_pro_api.dto.UserResponseDTO;
 import com.agenda_pro_api.entity.User;
+import com.agenda_pro_api.exception.EmailAlreadyExistsException;
+import com.agenda_pro_api.exception.InvalidCredentialsException;
+import com.agenda_pro_api.mapper.UserMapper;
 import com.agenda_pro_api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,38 +19,52 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final UserMapper userMapper;
 
-    public User register(RegisterDTO data) {
+    public UserResponseDTO register(RegisterDTO data) {
 
-        User user = new User();
+        // E-mail é normalizado para minúsculas ANTES de qualquer consulta/gravação.
+        // Sem isso, "Joao@mail.com" e "joao@mail.com" seriam tratados como
+        // e-mails diferentes — permitindo cadastro duplicado e exigindo que o
+        // usuário digite o e-mail com a capitalização exata no login.
+        String normalizedEmail = normalizeEmail(data.email());
 
-        user.setName(data.name());
-        user.setEmail(data.email());
+        // Regra de negócio: e-mail é único. Checamos ANTES de salvar para
+        // devolver um erro claro (409) em vez de estourar a constraint do banco.
+        if (userRepository.findByEmail(normalizedEmail).isPresent()) {
+            throw new EmailAlreadyExistsException(normalizedEmail);
+        }
 
-        String encryptedPassword =
-                passwordEncoder.encode(data.password());
+        User user = userMapper.toEntity(data);
+        user.setEmail(normalizedEmail);
 
-        user.setPassword(encryptedPassword);
+        // Criptografia é responsabilidade do Service. Nunca salvamos senha crua.
+        user.setPassword(passwordEncoder.encode(data.password()));
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        // Devolve DTO sem a senha — nunca expor a entidade diretamente.
+        return userMapper.toResponse(savedUser);
     }
 
     public String login(LoginDTO data) {
 
-        User user = userRepository.findByEmail(data.email())
-                .orElseThrow(() ->
-                        new RuntimeException("Usuário não encontrado"));
+        String normalizedEmail = normalizeEmail(data.email());
+
+        User user = userRepository.findByEmail(normalizedEmail)
+                .orElseThrow(InvalidCredentialsException::new);
 
         boolean passwordMatches =
-                passwordEncoder.matches(
-                        data.password(),
-                        user.getPassword()
-                );
+                passwordEncoder.matches(data.password(), user.getPassword());
 
         if (!passwordMatches) {
-            throw new RuntimeException("Senha inválida");
+            throw new InvalidCredentialsException();
         }
 
         return jwtService.generateToken(user.getEmail());
+    }
+
+    private String normalizeEmail(String email) {
+        return email.trim().toLowerCase();
     }
 }

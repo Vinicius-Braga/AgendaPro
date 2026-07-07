@@ -1,0 +1,320 @@
+{
+  "info": {
+    "name": "Agenda Pro API",
+    "description": "Collection completa da API Agenda Pro.\n\n## Como usar\n1. Selecione o environment **Agenda Pro - Local** (ou ajuste a variável `baseUrl`).\n2. Rode **Auth > Register** para criar um usuário.\n3. Rode **Auth > Login** — o `token` JWT é salvo automaticamente e usado em todas as rotas protegidas.\n4. As demais requisições já enviam `Authorization: Bearer {{token}}` herdado da collection.\n\nO usuário logado é identificado pelo próprio token — nenhuma requisição pede `userId` manualmente. Os IDs de clientes/serviços criados (`clientId`, `serviceId`) são capturados automaticamente por scripts de teste, permitindo encadear as chamadas sem copiar/colar.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "clientId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "serviceId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Vinicius\",\n  \"email\": \"vinicius@example.com\",\n  \"password\": \"senha123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Cadastra um novo usuário. Retorna 201 com { id, name, email }.\nValidações: name/email/password obrigatórios, email válido, senha >= 6 caracteres.\nE-mail é normalizado para minúsculas (case-insensitive). E-mail duplicado retorna 409."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"vinicius@example.com\",\n  \"password\": \"senha123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Autentica e retorna { token }. O token é salvo automaticamente na variável {{token}} e usado nas rotas protegidas.\nO e-mail não diferencia maiúsculas/minúsculas. Credenciais inválidas retornam 401."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"status 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Salva o token JWT automaticamente",
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.token) {",
+                  "        pm.collectionVariables.set(\"token\", body.token);",
+                  "        console.log(\"Token JWT salvo com sucesso.\");",
+                  "    } else {",
+                  "        console.warn(\"Resposta sem campo 'token'.\");",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clients",
+      "item": [
+        {
+          "name": "List my clients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/clients",
+              "host": ["{{baseUrl}}"],
+              "path": ["clients"]
+            },
+            "description": "Lista os clientes do usuário autenticado (identificado pelo token, sem precisar informar userId)."
+          }
+        },
+        {
+          "name": "Create client",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"João da Silva\",\n  \"phone\": \"11999998888\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/clients",
+              "host": ["{{baseUrl}}"],
+              "path": ["clients"]
+            },
+            "description": "Cria um cliente vinculado automaticamente ao usuário autenticado (via token)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.id) {",
+                  "        pm.collectionVariables.set(\"clientId\", body.id);",
+                  "        console.log(\"clientId salvo:\", body.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete client",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/clients/{{clientId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["clients", "{{clientId}}"]
+            },
+            "description": "Remove um cliente pelo id. Só funciona se o cliente pertencer ao usuário autenticado (senão retorna 404)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Services",
+      "item": [
+        {
+          "name": "List my services",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/services",
+              "host": ["{{baseUrl}}"],
+              "path": ["services"]
+            },
+            "description": "Lista os serviços do usuário autenticado."
+          }
+        },
+        {
+          "name": "Create service",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Corte de cabelo\",\n  \"price\": 50.00,\n  \"durationMinutes\": 30\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/services",
+              "host": ["{{baseUrl}}"],
+              "path": ["services"]
+            },
+            "description": "Cria um serviço vinculado automaticamente ao usuário autenticado (via token)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.id) {",
+                  "        pm.collectionVariables.set(\"serviceId\", body.id);",
+                  "        console.log(\"serviceId salvo:\", body.id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Appointments",
+      "item": [
+        {
+          "name": "Create appointment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client\": { \"id\": \"{{clientId}}\" },\n  \"service\": { \"id\": \"{{serviceId}}\" },\n  \"dateTime\": \"2026-07-10T14:00:00\",\n  \"status\": \"SCHEDULED\",\n  \"price\": 50.00,\n  \"paid\": false,\n  \"notes\": \"Primeira visita\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/appointments",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments"]
+            },
+            "description": "Cria um agendamento vinculado automaticamente ao usuário autenticado (via token). status aceita: SCHEDULED, DONE, CANCELED. dateTime no formato ISO (yyyy-MM-ddTHH:mm:ss)."
+          }
+        },
+        {
+          "name": "Get day agenda",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/appointments/day?date=2026-07-10",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments", "day"],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-07-10",
+                  "description": "Formato yyyy-MM-dd"
+                }
+              ]
+            },
+            "description": "Retorna os agendamentos do usuário autenticado em um dia específico."
+          }
+        },
+        {
+          "name": "Get pending appointments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/appointments/pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments", "pending"]
+            },
+            "description": "Retorna os agendamentos pendentes (ex.: não pagos) do usuário autenticado."
+          }
+        }
+      ]
+    }
+  ]
+}
