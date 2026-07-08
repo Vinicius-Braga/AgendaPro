@@ -18,6 +18,14 @@ public class ServiceMapper {
         return service;
     }
 
+    // Aplica os campos editáveis do DTO numa entity JÁ EXISTENTE — preserva
+    // id, user e createdAt, que nunca devem mudar numa edição.
+    public void updateEntity(ServiceEntity service, CreateServiceRequestDTO dto) {
+        service.setName(dto.name());
+        service.setPrice(dto.price());
+        service.setDurationMinutes(dto.durationMinutes());
+    }
+
     public ServiceResponseDTO toResponse(ServiceEntity service) {
         return new ServiceResponseDTO(
                 service.getId(),

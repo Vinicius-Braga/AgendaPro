@@ -4,6 +4,7 @@ import com.agenda_pro_api.dto.CreateServiceRequestDTO;
 import com.agenda_pro_api.dto.ServiceResponseDTO;
 import com.agenda_pro_api.entity.ServiceEntity;
 import com.agenda_pro_api.entity.User;
+import com.agenda_pro_api.exception.ResourceNotFoundException;
 import com.agenda_pro_api.mapper.ServiceMapper;
 import com.agenda_pro_api.repository.ServiceRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,5 +30,16 @@ public class ServiceService {
         ServiceEntity service = mapper.toEntity(dto, owner);
         ServiceEntity saved = repository.save(service);
         return mapper.toResponse(saved);
+    }
+
+    public ServiceResponseDTO update(UUID id, CreateServiceRequestDTO dto, UUID userId) {
+        // findByIdAndUserId garante que um usuário só edite os PRÓPRIOS
+        // serviços, mesmo sabendo o UUID de um serviço de outro usuário.
+        ServiceEntity service = repository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado"));
+
+        mapper.updateEntity(service, dto);
+
+        return mapper.toResponse(repository.save(service));
     }
 }

@@ -64,6 +64,14 @@ public class AuthService {
         return jwtService.generateToken(user.getEmail());
     }
 
+    // O front precisa exibir o nome do usuário logado (ex.: nome do negócio no
+    // cabeçalho/sidebar) sem ter que decodificar isso do JWT — o token só
+    // carrega o e-mail (subject). @AuthenticationPrincipal já entrega o User
+    // completo, então é só mapear.
+    public UserResponseDTO me(User user) {
+        return userMapper.toResponse(user);
+    }
+
     private String normalizeEmail(String email) {
         return email.trim().toLowerCase();
     }

@@ -44,6 +44,11 @@ public class AppointmentController {
         return service.getPending(user.getId());
     }
 
+    @GetMapping("/{id}")
+    public AppointmentResponseDTO getOne(@PathVariable UUID id, @AuthenticationPrincipal User user) {
+        return service.getOne(id, user.getId());
+    }
+
     // PATCH + sub-rota de ação (em vez de um PUT genérico) porque isto não é
     // uma edição de atributo qualquer — é uma transição de estado do domínio,
     // com regras próprias de quando é permitida. Deixar isso explícito na URL

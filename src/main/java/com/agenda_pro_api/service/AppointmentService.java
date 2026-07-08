@@ -60,6 +60,10 @@ public class AppointmentService {
         return mapper.toResponse(saved);
     }
 
+    public AppointmentResponseDTO getOne(UUID id, UUID userId) {
+        return mapper.toResponse(findOwnedOrThrow(id, userId));
+    }
+
     public List<AppointmentResponseDTO> getDayAgenda(UUID userId, LocalDate date) {
         LocalDateTime start = date.atStartOfDay();
         LocalDateTime end = date.atTime(23, 59, 59);

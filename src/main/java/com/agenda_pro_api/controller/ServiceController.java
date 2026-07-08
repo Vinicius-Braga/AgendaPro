@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/services")
@@ -32,5 +33,14 @@ public class ServiceController {
     ) {
         ServiceResponseDTO created = service.create(dto, user);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @PutMapping("/{id}")
+    public ServiceResponseDTO update(
+            @PathVariable UUID id,
+            @RequestBody @Valid CreateServiceRequestDTO dto,
+            @AuthenticationPrincipal User user
+    ) {
+        return service.update(id, dto, user.getId());
     }
 }
